@@ -28,8 +28,9 @@ introduced in the skeleton code below. For instance, you might want to
 add a "rec", or use a different argument list, or no argument list at
 all but binding to an anonymous function instead.) *)
 
-let inc _ =
-  failwith "inc not implemented" ;;
+let inc (x : int ref) : int = 
+	x := !x+1;
+	!x ;;
 
 (* Write a function named remember that returns the last string that
 it was called with. The first time it is called, it should return the
@@ -47,8 +48,12 @@ This is probably the least functional function ever written.
 As usual, you shouldn't feel beholden to how the definition is
 introduced in the skeleton code below. *)
 
-let remember _ = 
-  failwith "remember not implemented" ;;
+let remember =
+	let r = ref "" in 
+	fun (s : string) ->
+		let temp = !r in 
+		r := s;
+		temp ;;
 
 (*====================================================================
 Part 2: Gensym
@@ -90,8 +95,12 @@ Complete the implementation of gensym. As usual, you shouldn't feel
 beholden to how the definition is introduced in the skeleton code
 below. (We'll stop mentioning this now.) *)
 
+let x = ref 0 ;; 
+
 let gensym (s : string) : string = 
-  failwith "gensym not implemented" ;;
+  let temp = s ^ (string_of_int !x) in
+  let _ = inc x in 
+  temp ;;
 
 (*====================================================================
 Part 3: Appending mutable lists
@@ -119,8 +128,10 @@ list to a mutable list, with behavior like this:
       Cons (1, {contents = Cons (2, {contents = Cons (3, {contents = Nil})})})
  *)
 
-let mlist_of_list (lst : 'a list) : 'a mlist =
-  failwith "mlist_of_list not implemented" ;;
+let rec mlist_of_list (lst : 'a list) : 'a mlist =
+  match lst with 
+  | [] -> Nil
+  | hd :: tl -> Cons (hd, {contents = (mlist_of_list tl) });;
 
 (* Define a function length to compute the length of an mlist. Try to
 do this without looking at the solution that is given in the lecture
@@ -132,11 +143,13 @@ slides.
     - : int = 4
  *)
 
-let length (m : 'a mlist) : int = 
-  failwith "length not implemented" ;;
+let rec length (m : 'a mlist) : int = 
+   match m with 
+   | Nil ->  0
+   | Cons (hd, tl) -> 1 + length (!tl) ;;
 
 (* What is the time complexity of the length function in O() notation
-in terms of the length of its list argument? *)
+in terms of the length of its list argument? Linear O(n)*)
 
 
 (* Now, define a function mappend that takes a *non-empty* mutable
@@ -147,6 +160,9 @@ about before you get started:
  o What is an appropriate return type for the mappend function? (You
    can glean our intended answer from the examples below, but try to
    think it through yourself first.)
+
+   mutable list -> mutable list -> mutable list 
+   'a mlist -> 'a mlist -> unit
 
 #ifdef SOLN 
 (* ANSWER: Since mappend is called for its side effect, unit is the
